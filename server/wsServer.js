@@ -263,11 +263,10 @@ wss.on('connection', (ws) => {
                 : msg.gameId;
             const { playerId } = msg;
 
-            console.log('start_game=============', gameId);
-
             const room = rooms.get(gameId);
             // if (!room) return;
-            console.log('start_game====222=========', rooms);
+            console.log('start_game====222=========', gameId, rooms);
+            console.log('start_game====333=========', msg.initGame);
 
             room.status = "running";
             // создаём игру ТОЛЬКО здесь

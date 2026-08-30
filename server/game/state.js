@@ -16,7 +16,7 @@ function createEmptyPlayer(id, name) {
 }
 
 function createInitialGameState(gameId, decks, nobles, initialTokens, playerId) {
-    // console.log(gameId, decks, nobles, initialTokens, 'createInitialGameState');
+    console.log(gameId, decks, nobles, initialTokens, 'createInitialGameState');
     return {
         id: gameId, //roomId
         players: [],
