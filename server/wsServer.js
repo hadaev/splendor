@@ -36,6 +36,7 @@ async function syncRoomsFromDb() {
                 });
             } else {
                 const existing = rooms.get(roomId);
+                normalizeRoom(existing);
                 if (!existing.name) {
                     existing.name = dbRoom.name;
                 }
@@ -46,14 +47,41 @@ async function syncRoomsFromDb() {
     }
 }
 
+function normalizeRoom(room) {
+    if (!room) return room;
+    if (!(room.players instanceof Map)) {
+        const rawPlayers = room.players && typeof room.players === 'object'
+            ? room.players
+            : {};
+        const playerMap = new Map();
+        if (Array.isArray(rawPlayers)) {
+            rawPlayers.forEach((player) => {
+                if (player && player.id !== undefined) {
+                    playerMap.set(player.id, player.name || player.id);
+                }
+            });
+        } else if (rawPlayers && typeof rawPlayers === 'object') {
+            Object.entries(rawPlayers).forEach(([playerId, playerName]) => {
+                playerMap.set(playerId, playerName || playerId);
+            });
+        }
+        room.players = playerMap;
+    }
+    room.playerCount = room.players ? room.players.size : 0;
+    return room;
+}
+
 function getRoomsList() {
-    return Array.from(rooms.entries()).map(([roomId, room]) => ({
-        roomId,
-        name: room.name || `Комната #${roomId}`,
-        players: room.players ? room.players.size : 0,
-        maxPlayers: 4,
-        status: room.status || 'waiting'
-    }));
+    return Array.from(rooms.entries()).map(([roomId, room]) => {
+        const normalized = normalizeRoom(room);
+        return {
+            roomId,
+            name: normalized.name || `Комната #${roomId}`,
+            players: normalized.players ? normalized.players.size : 0,
+            maxPlayers: 4,
+            status: normalized.status || 'waiting'
+        };
+    });
 }
 
 function broadcastRoomsList() {
@@ -105,7 +133,7 @@ function getOrCreateRoom(roomId, currentPlayerId) {
             currentPlayerId
         });
     }
-    return rooms.get(roomId);
+    return normalizeRoom(rooms.get(roomId));
 }
 
 // ------------------------------------------------------
@@ -184,6 +212,46 @@ wss.on('connection', (ws) => {
         if (msg.type === 'join_game') {
             gameService.joinGame(ws, msg, rooms);
             broadcastRoomsList();
+            return;
+        }
+
+        // ------------------------------------------------------
+        // LEAVE ROOM
+        // ------------------------------------------------------
+        if (msg.type === 'leave_game') {
+            const result = gameService.leaveGame(ws, msg, rooms);
+            if (result && result.roomEmpty) {
+                rooms.delete(result.roomId);
+                games.delete(result.roomId);
+            }
+            broadcastRoomsList();
+            return;
+        }
+
+        // ------------------------------------------------------
+        // MAKE MOVE
+        // ------------------------------------------------------
+        if (msg.type === 'make_move') {
+            try {
+                const gameId = typeof msg.gameId === 'string' && /^\d+$/.test(msg.gameId)
+                    ? Number(msg.gameId)
+                    : msg.gameId;
+                const { playerId, move } = msg;
+                const game = games.get(gameId);
+                if (!game) {
+                    send(ws, { type: 'error', message: 'game_not_found' });
+                    return;
+                }
+                const updatedGame = handleMove(game, playerId, move);
+                games.set(gameId, updatedGame);
+                // broadcast updated state to players in room
+                gameService.broadcastRoomInfo(gameId, playerId, rooms);
+                broadcastGame(gameId);
+            } catch (e) {
+                console.error('make_move error', e && e.message ? e.message : e);
+                send(ws, { type: 'error', message: e && e.message ? e.message : 'move_error' });
+            }
+            return;
         }
 
         // ------------------------------------------------------
@@ -245,29 +313,30 @@ wss.on('connection', (ws) => {
     // ------------------------------------------------------
     // CLOSE CONNECTION
     // ------------------------------------------------------
-    // ws.on('close', () => {
-    //     const client = clients.get(ws);
-    //     console.log("WS CLOSED beg", client);
-    //
-    //     if (!client) return;
-    //     console.log("WS CLOSED end", client);
-    //
-    //     const { playerId, roomId } = client;
-    //
-    //     if (roomId && rooms.has(roomId)) {
-    //         const room = rooms.get(roomId);
-    //         room.players.delete(playerId);
-    //
-    //         if (room.players.size === 0) {
-    //             rooms.delete(roomId);
-    //             games.delete(roomId);
-    //         } else {
-    //             broadcastRoomInfo(roomId);
-    //         }
-    //     }
-    //
-    //     clients.delete(ws);
-    // });
+    ws.on('close', () => {
+        const client = clients.get(ws);
+
+        if (!client) return;
+
+        const { playerId, roomId } = client;
+
+        if (roomId && rooms.has(roomId)) {
+            const room = normalizeRoom(rooms.get(roomId));
+            if (playerId && room.players && room.players.has(playerId)) {
+                room.players.delete(playerId);
+                room.playerCount = room.players.size;
+            }
+
+            if (!room.players || room.players.size === 0) {
+                rooms.delete(roomId);
+                games.delete(roomId);
+            }
+
+            broadcastRoomsList();
+        }
+
+        clients.delete(ws);
+    });
 });
 
 (async () => {

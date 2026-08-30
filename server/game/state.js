@@ -9,6 +9,7 @@ function createEmptyPlayer(id, name) {
         bonuses: {},         // { ruby: 1, emerald: 3, ... } — купленные карты
         reservedCards: [],
         purchasedCards: [],
+        claimedNobles: [],
         points: 0,
         isActive: false
     };
@@ -27,6 +28,7 @@ function createInitialGameState(gameId, decks, nobles, initialTokens, playerId) 
         visibleTier2: decks.tier2.slice(0, 4),
         visibleTier3: decks.tier3.slice(0, 4),
         nobles: nobles.slice(0, 3),
+        deckNobles: nobles.slice(3),
         tokens: initialTokens,
         status: 'waiting',
         winnerId: null,

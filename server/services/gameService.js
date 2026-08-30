@@ -55,7 +55,16 @@ class GameService {
                 name
             });
         }
-        return rooms.get(roomId);
+
+        const room = rooms.get(roomId);
+        if (!(room.players instanceof Map)) {
+            const fallbackPlayers = room.players && typeof room.players === 'object'
+                ? new Map(Object.entries(room.players))
+                : new Map();
+            room.players = fallbackPlayers;
+        }
+        room.playerCount = room.players.size;
+        return room;
     }
     broadcastRoomInfo(roomId,playerId, rooms) {
         console.log('rooms = ', rooms);
@@ -105,10 +114,14 @@ class GameService {
 
 
         // Если игрок уже был в комнате — НЕ создаём нового
+        if (!(room.players instanceof Map)) {
+            room.players = new Map(Object.entries(room.players || {}));
+        }
 
         if (!room.players.has(playerId)) {
             room.players.set(playerId, playerName);
         }
+        room.playerCount = room.players.size;
 
         // Обновляем client
         clients.set(ws, { playerId, roomId: gameId, name: playerName });
@@ -117,6 +130,45 @@ class GameService {
 
         this.broadcastRoomInfo(gameId, playerId, rooms);
         return;
+    }
+
+    leaveGame(ws, msg, rooms) {
+        const gameId = typeof msg.gameId === 'string' && /^\d+$/.test(msg.gameId)
+            ? Number(msg.gameId)
+            : msg.gameId;
+        const { playerId } = msg;
+        if (!gameId || !playerId) {
+            userService.send(ws, { type: 'error', message: 'game_id_and_player_id_required' });
+            return { roomEmpty: false, roomId: gameId };
+        }
+
+        const room = rooms.get(gameId);
+        if (!room) {
+            userService.send(ws, { type: 'error', message: 'room_not_found' });
+            return { roomEmpty: false, roomId: gameId };
+        }
+
+        if (!(room.players instanceof Map)) {
+            room.players = new Map(Object.entries(room.players || {}));
+        }
+
+        if (room.players && room.players.has(playerId)) {
+            room.players.delete(playerId);
+        }
+        room.playerCount = room.players ? room.players.size : 0;
+
+        // remove any client entries for this player from local clients map
+        for (const [clientWs, info] of clients.entries()) {
+            if (info && info.playerId === playerId) {
+                clients.delete(clientWs);
+            }
+        }
+
+        userService.send(ws, { type: 'left', gameId, playerId });
+        this.broadcastRoomInfo(gameId, playerId, rooms);
+
+        const isEmpty = !room.players || room.players.size === 0;
+        return { roomEmpty: isEmpty, roomId: gameId };
     }
 }
 
