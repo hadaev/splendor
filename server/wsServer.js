@@ -1,7 +1,8 @@
 require('dotenv').config();
 const { WebSocketServer, WebSocket } = require('ws');
 const sequelize = require('./db/db');
-const { createInitialGameState, createEmptyPlayer } = require('./game/state');
+const { gameState, createEmptyPlayer } = require('./game/state');
+const { createInitialGame } = require('./game/createInitialGameState');
 const { decks, nobles, initialTokens, getInitialTokens } = require('./data/data');
 const { handleMove, joinGameLogic } = require('./game/engine');
 const userService = require('./utils/userService');
@@ -261,25 +262,48 @@ wss.on('connection', (ws) => {
             const gameId = typeof msg.gameId === 'string' && /^\d+$/.test(msg.gameId)
                 ? Number(msg.gameId)
                 : msg.gameId;
-            const { playerId } = msg;
+            const {playerId} = msg;
 
             const room = rooms.get(gameId);
             // if (!room) return;
             console.log('start_game====222=========', gameId, rooms);
             console.log('start_game====333=========', msg.initGame);
 
+            // const {
+            //     deck1,
+            //     deck2,
+            //     deck3,
+            //     openCards1,
+            //     openCards2,
+            //     openCards3,
+            //     nobles,
+            //     deckNobles,
+            //     // tokens
+            // } = createInitialGame()
+
             room.status = "running";
             // создаём игру ТОЛЬКО здесь
             const roomForCount = rooms.get(gameId);
             const playersCount = roomForCount && roomForCount.players ? roomForCount.players.size : 4;
             const dynamicTokens = getInitialTokens(playersCount);
-            const game = createInitialGameState(
-                gameId,
-                decks,
-                nobles,
-                dynamicTokens,
-                playerId
-            );
+            const game = createInitialGame(gameId, playersCount);
+            // const game = gameState(
+            //     gameId,
+            //
+            //     deck1,
+            //     deck2,
+            //     deck3,
+            //
+            //     openCards1,
+            //     openCards2,
+            //     openCards3,
+            //
+            //     nobles,
+            //     deckNobles,
+            //
+            //     dynamicTokens,
+            //     playerId,
+            // );
             console.log(msg, 'create_room');
 
             games.set(gameId, game);
@@ -291,22 +315,41 @@ wss.on('connection', (ws) => {
         // ------------------------------------------------------
         // MAKE MOVE
         // ------------------------------------------------------
-        // if (msg.type === 'make_move') {
-        //     const { gameId, playerId, move } = msg;
-        //     const game = games.get(gameId);
-        //     if (!game) {
-        //         send(ws, { type: 'error', message: 'game_not_found' });
-        //         return;
-        //     }
-        //
-        //     try {
-        //         const updatedGame = handleMove(game, playerId, move);
-        //         games.set(gameId, updatedGame);
-        //         broadcastGame(gameId);
-        //     } catch (e) {
-        //         send(ws, { type: 'error', message: e.message || 'invalid_move' });
-        //     }
-        // }
+        if (msg.type === 'make_move') {
+            const { gameId, playerId, move } = msg;
+            const game = games.get(gameId);
+            if (!game) {
+                send(ws, { type: 'error', message: 'game_not_found' });
+                return;
+            }
+
+            try {
+                const updatedGame = handleMove(game, playerId, move);
+                games.set(gameId, updatedGame);
+                broadcastGame(gameId);
+            } catch (e) {
+                send(ws, { type: 'error', message: e.message || 'invalid_move' });
+            }
+
+            const dynamicTokens = getInitialTokens(playersCount);
+            const gameState = gameState(
+                gameId,
+
+                deck1,
+                deck2,
+                deck3,
+
+                openCards1,
+                openCards2,
+                openCards3,
+
+                nobles,
+                deckNobles,
+
+                dynamicTokens,
+                playerId,
+            );
+        }
     });
 
     // ------------------------------------------------------

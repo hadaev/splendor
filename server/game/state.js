@@ -15,31 +15,47 @@ function createEmptyPlayer(id, name) {
     };
 }
 
-function createInitialGameState(gameId, decks, nobles, initialTokens, playerId) {
-    console.log(gameId, decks, nobles, initialTokens, 'createInitialGameState');
+function gameState(
+    gameId,
+
+    deck1,
+    deck2,
+    deck3,
+
+    openCards1,
+    openCards2,
+    openCards3,
+
+    nobles,
+    deckNobles,
+
+    tokens,
+    playerId
+) {
+    console.log(gameId, deck1, deck2, deck3, openCards1, openCards2, openCards3, nobles, initialTokens, 'createInitialGameState');
     return {
         id: gameId, //roomId
         players: [],
         currentPlayerId: playerId,
-        deckTier1: decks.tier1,
-        deckTier2: decks.tier2,
-        deckTier3: decks.tier3,
-        visibleTier1: decks.tier1.slice(0, 4),
-        visibleTier2: decks.tier2.slice(0, 4),
-        visibleTier3: decks.tier3.slice(0, 4),
-        nobles: nobles.slice(0, 3),
-        deckNobles: nobles.slice(3),
-        tokens: initialTokens,
+        deckTier1: deck1,
+        deckTier2: deck2,
+        deckTier3: deck3,
+        visibleTier1: openCards1,
+        visibleTier2: openCards2,
+        visibleTier3: openCards3,
+        nobles,
+        deckNobles,
+        tokens,
         status: 'waiting',
         winnerId: null,
-        deckTier1Count: decks.tier1.length,
-        deckTier2Count: decks.tier2.length,
-        deckTier3Count: decks.tier3.length,
+        deckTier1Count: deck1.length,
+        deckTier2Count: deck2.length,
+        deckTier3Count: deck3.length,
     };
 }
 
 module.exports = {
     GEM_TYPES,
     createEmptyPlayer,
-    createInitialGameState
+    gameState
 };
