@@ -1,19 +1,15 @@
 require('dotenv').config();
 const { WebSocketServer, WebSocket } = require('ws');
 const sequelize = require('./db/db');
-const { gameState, createEmptyPlayer } = require('./game/state');
 const { createInitialGame } = require('./game/createInitialGameState');
-const { decks, nobles, initialTokens, getInitialTokens } = require('./data/data');
-const { handleMove, joinGameLogic } = require('./game/engine');
+const { handleMove } = require('./game/engine');
 const userService = require('./utils/userService');
 const gameService = require('./services/gameService');
-const migrator = require("./db/migrator");
-const {User, Room} = require("./models/models");
-const seeder = require("./db/seeder");
+const { Room } = require("./models/models");
 const PORT = 8080
 const wss = new WebSocketServer({ port: PORT });
 const games = new Map();    // gameId -> gameState
-const clients = new Map();  // ws -> { playerId, roomId, name }
+// clients map unified into gameService.clients (single source of truth)
 const rooms = new Map();    // roomId -> { players: Map(playerId -> name), status }
 
 // ------------------------------------------------------
@@ -94,13 +90,19 @@ function broadcastRoomsList() {
 
 function broadcastGame(roomId) {
     const game = games.get(roomId);
-    if (!game) return;
+    if (!game) {
+        console.warn(`⚠️ broadcastGame: game not found for roomId ${roomId}`);
+        return;
+    }
 
-    for (const [ws, info] of clients.entries()) {
+    let sentCount = 0;
+    for (const [ws, info] of gameService.clients.entries()) {
         if (info.roomId === roomId) {
             send(ws, { type: 'game_state', game });
+            sentCount++;
         }
     }
+    console.log(`✅ broadcastGame: отправлена игра ${roomId} для ${sentCount} клиентов`);
 }
 
 // function broadcastRoomInfo(roomId,playerId) {
@@ -126,16 +128,7 @@ function broadcastGame(roomId) {
 //     }
 // }
 
-function getOrCreateRoom(roomId, currentPlayerId) {
-    if (!rooms.has(roomId)) {
-        rooms.set(roomId, {
-            players: new Map(), // playerId -> name
-            status: 'waiting',
-            currentPlayerId
-        });
-    }
-    return normalizeRoom(rooms.get(roomId));
-}
+// (getOrCreateRoom moved to gameService) - local helper removed to avoid duplication
 
 // ------------------------------------------------------
 // CONNECTION
@@ -173,6 +166,23 @@ wss.on('connection', (ws) => {
         }
 
         // ------------------------------------------------------
+        // REQUEST GAME STATE
+        // ------------------------------------------------------
+        if (msg.type === 'request_game_state') {
+            const roomId = typeof msg.roomId === 'string' && /^\d+$/.test(msg.roomId)
+                ? Number(msg.roomId)
+                : msg.roomId;
+
+            const game = games.get(roomId);
+            if (game) {
+                send(ws, { type: 'game_state', game });
+            } else {
+                send(ws, { type: 'error', message: 'game_not_found', roomId });
+            }
+            return;
+        }
+
+        // ------------------------------------------------------
         // CREATE ROOM
         // ------------------------------------------------------
         if (msg.type === 'create_room') {
@@ -197,6 +207,21 @@ wss.on('connection', (ws) => {
             gameService.getOrCreateRoom(roomId, currentPlayerId, rooms, msg.roomName);
 
             const createdRoom = rooms.get(roomId);
+
+            // Инициализируем начальную доску при создании комнаты, чтобы
+            // все последующие подключающиеся видели одинаковые открытые карты
+            // (создаём игру только если её ещё нет)
+            if (!games.has(roomId)) {
+                try {
+                    // Можно использовать 4 игроков как стандартный шаблон при создании
+                    const initialGame = createInitialGame(roomId, 4);
+                    games.set(roomId, initialGame);
+                    console.log(`💡 Инициализирована стартовая доска для комнаты ${roomId}`);
+                } catch (e) {
+                    console.error('Failed to create initial game on room creation', e);
+                }
+            }
+
             send(ws, {
                 type: 'room_created',
                 roomId,
@@ -211,7 +236,18 @@ wss.on('connection', (ws) => {
         // JOIN ROOM
         // ------------------------------------------------------
         if (msg.type === 'join_game') {
+            const gameId = typeof msg.gameId === 'string' && /^\d+$/.test(msg.gameId)
+                ? Number(msg.gameId)
+                : msg.gameId;
+
             gameService.joinGame(ws, msg, rooms);
+
+            // Если для комнаты уже есть игра — сразу отправим её подключившемуся клиенту
+            const existingGame = games.get(gameId);
+            if (existingGame) {
+                send(ws, { type: 'game_state', game: existingGame });
+            }
+
             broadcastRoomsList();
             return;
         }
@@ -265,98 +301,40 @@ wss.on('connection', (ws) => {
             const {playerId} = msg;
 
             const room = rooms.get(gameId);
-            // if (!room) return;
-            console.log('start_game====222=========', gameId, rooms);
-            console.log('start_game====333=========', msg.initGame);
-
-            // const {
-            //     deck1,
-            //     deck2,
-            //     deck3,
-            //     openCards1,
-            //     openCards2,
-            //     openCards3,
-            //     nobles,
-            //     deckNobles,
-            //     // tokens
-            // } = createInitialGame()
-
-            room.status = "running";
-            // создаём игру ТОЛЬКО здесь
-            const roomForCount = rooms.get(gameId);
-            const playersCount = roomForCount && roomForCount.players ? roomForCount.players.size : 4;
-            const dynamicTokens = getInitialTokens(playersCount);
-            const game = createInitialGame(gameId, playersCount);
-            // const game = gameState(
-            //     gameId,
-            //
-            //     deck1,
-            //     deck2,
-            //     deck3,
-            //
-            //     openCards1,
-            //     openCards2,
-            //     openCards3,
-            //
-            //     nobles,
-            //     deckNobles,
-            //
-            //     dynamicTokens,
-            //     playerId,
-            // );
-            console.log(msg, 'create_room');
-
-            games.set(gameId, game);
-            gameService.broadcastRoomInfo(gameId, playerId, rooms);
-            broadcastGame(gameId);
-            return;
-        }
-
-        // ------------------------------------------------------
-        // MAKE MOVE
-        // ------------------------------------------------------
-        if (msg.type === 'make_move') {
-            const { gameId, playerId, move } = msg;
-            const game = games.get(gameId);
-            if (!game) {
-                send(ws, { type: 'error', message: 'game_not_found' });
+            if (!room) {
+                console.error(`❌ start_game: Комната ${gameId} не найдена`);
+                send(ws, { type: 'error', message: 'room_not_found' });
                 return;
             }
 
-            try {
-                const updatedGame = handleMove(game, playerId, move);
-                games.set(gameId, updatedGame);
-                broadcastGame(gameId);
-            } catch (e) {
-                send(ws, { type: 'error', message: e.message || 'invalid_move' });
+            console.log(`🎮 START_GAME: gameId=${gameId}, playerId=${playerId}`);
+
+            room.status = "running";
+            const roomForCount = rooms.get(gameId);
+            const playersCount = roomForCount && roomForCount.players ? roomForCount.players.size : 4;
+            console.log(`👥 Игроков в комнате: ${playersCount}`);
+
+            // Если игра уже создана при создании комнаты — не пересоздаём её,
+            // используем существующую. Иначе создаём игровое состояние сейчас.
+            if (!games.has(gameId)) {
+                const game = createInitialGame(gameId, playersCount);
+                console.log(`✅ Игра создана. Players: ${game.players?.length || 0}, Game ID: ${game.id}`);
+                games.set(gameId, game);
+                console.log(`💾 Игра сохранена в games Map для ID=${gameId}`);
+            } else {
+                console.log(`ℹ️ Игра для комнаты ${gameId} уже инициализирована ранее`);
             }
 
-            const dynamicTokens = getInitialTokens(playersCount);
-            const gameState = gameState(
-                gameId,
-
-                deck1,
-                deck2,
-                deck3,
-
-                openCards1,
-                openCards2,
-                openCards3,
-
-                nobles,
-                deckNobles,
-
-                dynamicTokens,
-                playerId,
-            );
+            gameService.broadcastRoomInfo(gameId, playerId, rooms);
+            broadcastGame(gameId);  // ← ОТПРАВЛЯЕМ ИГРУ ВСЕМ КЛИЕНТАМ (включая тех, кто только что присоединились)
         }
     });
 
     // ------------------------------------------------------
     // CLOSE CONNECTION
     // ------------------------------------------------------
-    ws.on('close', () => {
-        const client = clients.get(ws);
+        ws.on('close', () => {
+        const client = gameService.clients.get(ws);
 
         if (!client) return;
 
@@ -377,7 +355,7 @@ wss.on('connection', (ws) => {
             broadcastRoomsList();
         }
 
-        clients.delete(ws);
+        gameService.clients.delete(ws);
     });
 });
 
