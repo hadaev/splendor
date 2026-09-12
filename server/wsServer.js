@@ -240,6 +240,17 @@ wss.on('connection', (ws) => {
                 ? Number(msg.gameId)
                 : msg.gameId;
 
+            if (!gameId || !msg.playerId || !msg.playerName) {
+                send(ws, {
+                    type: 'error',
+                    message: 'join_game_requires_game_id_player_id_and_name',
+                    gameId,
+                    playerId: msg.playerId,
+                    playerName: msg.playerName
+                });
+                return;
+            }
+
             gameService.joinGame(ws, msg, rooms);
 
             // Если для комнаты уже есть игра — сразу отправим её подключившемуся клиенту
