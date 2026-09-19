@@ -325,16 +325,19 @@ wss.on('connection', (ws) => {
             const playersCount = roomForCount && roomForCount.players ? roomForCount.players.size : 4;
             console.log(`👥 Игроков в комнате: ${playersCount}`);
 
-            // Если игра уже создана при создании комнаты — не пересоздаём её,
-            // используем существующую. Иначе создаём игровое состояние сейчас.
-            if (!games.has(gameId)) {
-                const game = createInitialGame(gameId, playersCount);
-                console.log(`✅ Игра создана. Players: ${game.players?.length || 0}, Game ID: ${game.id}`);
-                games.set(gameId, game);
-                console.log(`💾 Игра сохранена в games Map для ID=${gameId}`);
-            } else {
-                console.log(`ℹ️ Игра для комнаты ${gameId} уже инициализирована ранее`);
-            }
+            const players = Array.from(roomForCount.players.entries()).map(([id, name]) => ({
+                id,
+                name,
+                tokens: { red: 0, blue: 0, green: 0, white: 0, black: 0, gold: 0 },
+                bonuses: { red: 0, blue: 0, green: 0, white: 0, black: 0 },
+                reservedCards: [],
+                purchasedCards: [],
+                claimedNobles: [],
+                points: 0
+            }));
+            const game = createInitialGame(gameId, playersCount, players);
+            games.set(gameId, game);
+            console.log(`Game state initialized for room ${gameId}`);
 
             gameService.broadcastRoomInfo(gameId, playerId, rooms);
             broadcastGame(gameId);  // ← ОТПРАВЛЯЕМ ИГРУ ВСЕМ КЛИЕНТАМ (включая тех, кто только что присоединились)

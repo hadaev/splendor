@@ -5,7 +5,7 @@ function cardsShuffle(arr) {
     return [...arr].sort(() => Math.random() - 0.5);
 }
 
-export function createInitialGame(gameId, playersCount) {
+export function createInitialGame(gameId, playersCount, players = []) {
     // 1. Перемешиваем колоды
     const deck1 = cardsShuffle(data.cardsLevel1);
     const deck2 = cardsShuffle(data.cardsLevel2);
@@ -22,8 +22,9 @@ export function createInitialGame(gameId, playersCount) {
     const deck3Rest = deck3.slice(4);
 
     // 4. Благородные — случайные 3
-    const nobles = cardsShuffle(data.nobles).slice(0, 3);
-    const deckNobles = data.nobles.length - 3;
+    const shuffledNobles = cardsShuffle(data.nobles);
+    const nobles = shuffledNobles.slice(0, 3);
+    const deckNobles = shuffledNobles.slice(3);
     // 5. Фишки
     // Если задано распределение по числу игроков — используем его
     let tokens = { ...data.tokens };
@@ -39,6 +40,10 @@ export function createInitialGame(gameId, playersCount) {
 
     // 7. Собираем объект игры
     return {
+        id: gameId,
+        players,
+        currentPlayerId: players[0]?.id || null,
+        status: 'running',
         nobles,
         deckNobles: deckNobles,
 

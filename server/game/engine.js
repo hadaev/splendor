@@ -21,7 +21,7 @@ function joinGameLogic(game, playerName, createEmptyPlayer) {
 // MAIN MOVE ROUTER
 // ------------------------------------------------------
 function handleMove(game, playerId, move) {
-    if (game.currentPlayerId !== playerId) {
+    if (String(game.currentPlayerId) !== String(playerId)) {
         throw new Error('not_your_turn');
     }
 
@@ -47,7 +47,7 @@ function handleMove(game, playerId, move) {
 // TAKE TOKENS
 // ------------------------------------------------------
 function handleTakeTokens(game, playerId, tokensToTake) {
-    const player = game.players.find(p => p.id === playerId);
+    const player = game.players.find(p => String(p.id) === String(playerId));
     if (!player) throw new Error('player_not_found');
 
     const colors = Object.keys(tokensToTake);
@@ -57,6 +57,10 @@ function handleTakeTokens(game, playerId, tokensToTake) {
     if (count > 3) throw new Error('too_many_tokens');
 
     const distinct = colors.length;
+
+    if (!((distinct === 1 && count === 2) || (distinct === 3 && count === 3))) {
+        throw new Error('invalid_token_selection');
+    }
 
     // 2 identical rule
     if (distinct === 1) {
@@ -80,7 +84,7 @@ function handleTakeTokens(game, playerId, tokensToTake) {
     if (playerTokenCount > 10) throw new Error('too_many_tokens_player');
 
     // APPLY CHANGES
-    const newGame = { ...game };
+    const newGame = { ...game, tokens: { ...game.tokens } };
     const newPlayer = { ...player, tokens: { ...player.tokens } };
 
     for (const c of colors) {
@@ -90,7 +94,7 @@ function handleTakeTokens(game, playerId, tokensToTake) {
 
     // replace player
     newGame.players = newGame.players.map(p =>
-        p.id === playerId ? newPlayer : p
+        String(p.id) === String(playerId) ? newPlayer : p
     );
 
     const gameAfterNobles = applyQualifyingNobles(newGame, playerId);
@@ -107,10 +111,11 @@ function handleTakeTokens(game, playerId, tokensToTake) {
 // BUY CARD
 // ------------------------------------------------------
 function handleBuyCard(game, playerId, cardId) {
-    const player = game.players.find(p => p.id === playerId);
+    const player = game.players.find(p => String(p.id) === String(playerId));
     if (!player) throw new Error('player_not_found');
 
-    const card = findCardInGame(game, cardId);
+    const reservedCard = (player.reservedCards || []).find(card => card.id === cardId);
+    const card = reservedCard || findCardInGame(game, cardId);
     if (!card) throw new Error('card_not_found');
 
     // check affordability
@@ -121,7 +126,7 @@ function handleBuyCard(game, playerId, cardId) {
     }
 
     // APPLY CHANGES
-    const newGame = { ...game };
+    const newGame = { ...game, tokens: { ...game.tokens } };
     const newPlayer = { ...player };
 
     // pay cost
@@ -132,13 +137,13 @@ function handleBuyCard(game, playerId, cardId) {
         const bonus = newPlayer.bonuses[color] || 0;
         const pay = Math.max(0, need - bonus);
 
-        if ((newTokens[color] || 0) >= pay) {
-            newTokens[color] -= pay;
-        } else {
-            const deficit = pay - (newTokens[color] || 0);
-            newTokens[color] = 0;
-            newTokens.gold = (newTokens.gold || 0) - deficit;
-        }
+        const coloredTokensUsed = Math.min(newTokens[color] || 0, pay);
+        const goldTokensUsed = pay - coloredTokensUsed;
+
+        newTokens[color] = (newTokens[color] || 0) - coloredTokensUsed;
+        newTokens.gold = (newTokens.gold || 0) - goldTokensUsed;
+        newGame.tokens[color] = (newGame.tokens[color] || 0) + coloredTokensUsed;
+        newGame.tokens.gold = (newGame.tokens.gold || 0) + goldTokensUsed;
     }
 
     newPlayer.tokens = newTokens;
@@ -146,7 +151,7 @@ function handleBuyCard(game, playerId, cardId) {
     // add bonus
     newPlayer.bonuses = {
         ...newPlayer.bonuses,
-        [card.color]: (newPlayer.bonuses[card.color] || 0) + 1
+        [card.bonus]: (newPlayer.bonuses[card.bonus] || 0) + 1
     };
 
     // add points
@@ -155,12 +160,16 @@ function handleBuyCard(game, playerId, cardId) {
     // add purchased card
     newPlayer.purchasedCards = [...newPlayer.purchasedCards, card];
 
-    // remove card from table + draw new one
-    removeCardFromGame(newGame, card);
+    if (reservedCard) {
+        newPlayer.reservedCards = (newPlayer.reservedCards || []).filter(card => card.id !== cardId);
+    } else {
+        // Remove an open card from the table and draw a replacement.
+        removeCardFromGame(newGame, card);
+    }
 
     // replace player
     newGame.players = newGame.players.map(p =>
-        p.id === playerId ? newPlayer : p
+        String(p.id) === String(playerId) ? newPlayer : p
     );
 
     const gameAfterNobles = applyQualifyingNobles(newGame, playerId);
@@ -178,7 +187,7 @@ function handleBuyCard(game, playerId, cardId) {
 // RESERVE CARD
 // ------------------------------------------------------
 function handleReserveCard(game, playerId, cardId) {
-    const player = game.players.find(p => p.id === playerId);
+    const player = game.players.find(p => String(p.id) === String(playerId));
     if (!player) throw new Error('player_not_found');
 
     const card = findCardInGame(game, cardId);
@@ -207,7 +216,7 @@ function handleReserveCard(game, playerId, cardId) {
     removeCardFromGame(newGame, card);
 
     // replace player
-    newGame.players = newGame.players.map(p => p.id === playerId ? newPlayer : p);
+    newGame.players = newGame.players.map(p => String(p.id) === String(playerId) ? newPlayer : p);
 
     const gameAfterNobles = applyQualifyingNobles(newGame, playerId);
     newGame.players = gameAfterNobles.players;
@@ -223,7 +232,7 @@ function handleReserveCard(game, playerId, cardId) {
 // HELPERS
 // ------------------------------------------------------
 function handleBuyNoble(game, playerId, nobleId) {
-    const player = game.players.find(p => p.id === playerId);
+    const player = game.players.find(p => String(p.id) === String(playerId));
     if (!player) throw new Error('player_not_found');
 
     const noble = findNobleInGame(game, nobleId);
@@ -249,7 +258,7 @@ function handleBuyNoble(game, playerId, nobleId) {
         newGame.nobles = [...newGame.nobles, replacement];
         newGame.deckNobles = newGame.deckNobles.slice(1);
     }
-    newGame.players = newGame.players.map(p => p.id === playerId ? newPlayer : p);
+    newGame.players = newGame.players.map(p => String(p.id) === String(playerId) ? newPlayer : p);
 
     newGame.currentPlayerId = getNextPlayerId(newGame, playerId);
 
@@ -257,16 +266,16 @@ function handleBuyNoble(game, playerId, nobleId) {
 }
 
 function getNextPlayerId(game, currentId) {
-    const idx = game.players.findIndex(p => p.id === currentId);
+    const idx = game.players.findIndex(p => String(p.id) === String(currentId));
     const next = (idx + 1) % game.players.length;
     return game.players[next].id;
 }
 
 function findCardInGame(game, cardId) {
     const all = [
-        ...game.visibleTier1,
-        ...game.visibleTier2,
-        ...game.visibleTier3
+        ...(game.openCards1 || []),
+        ...(game.openCards2 || []),
+        ...(game.openCards3 || [])
     ];
     return all.find(c => c.id === cardId);
 }
@@ -285,7 +294,7 @@ function canAffordNoble(player, cost) {
 }
 
 function applyQualifyingNobles(game, playerId) {
-    const player = game.players.find(p => p.id === playerId);
+    const player = game.players.find(p => String(p.id) === String(playerId));
     if (!player || !Array.isArray(game.nobles) || game.nobles.length === 0) {
         return game;
     }
@@ -303,7 +312,7 @@ function applyQualifyingNobles(game, playerId) {
 
     const updatedGame = {
         ...game,
-        players: game.players.map(p => p.id === playerId ? newPlayer : p)
+        players: game.players.map(p => String(p.id) === String(playerId) ? newPlayer : p)
     };
 
     const remainingNobles = updatedGame.nobles.filter(noble => !eligibleNobles.some(item => item.id === noble.id));
@@ -322,9 +331,9 @@ function applyQualifyingNobles(game, playerId) {
 function removeCardFromGame(game, card) {
     const tier = card.tier;
 
-    const visibleKey = `visibleTier${tier}`;
-    const deckKey = `deckTier${tier}`;
-    const countKey = `deckTier${tier}Count`;
+    const visibleKey = `openCards${tier}`;
+    const deckKey = `deck${tier}`;
+    const countKey = `deck${tier}Count`;
 
     // remove from visible
     game[visibleKey] = game[visibleKey].filter(c => c.id !== card.id);
