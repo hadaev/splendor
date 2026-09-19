@@ -1,0 +1,12 @@
+.input-error {
+    border-color: #ff6b6b !important;
+    background: rgba(255, 0, 0, 0.1) !important;
+}
+
+.error-text {
+    color: #ff6b6b;
+    font-size: 13px;
+    margin-top: -8px;
+    margin-bottom: 6px;
+    text-align: left;
+}

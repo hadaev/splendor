@@ -1,0 +1,41 @@
+.deck-stack {
+    position: relative;
+    width: clamp(58px, 7vw, 90px);
+    height: clamp(84px, 9.5vw, 130px);
+    flex: 0 0 auto;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.deck-stack:hover {
+    transform: translateY(-4px);
+}
+
+.deck-card {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-size: clamp(18px, 2vw, 26px);
+    font-weight: 700;
+}
+
+.deck-level {
+    opacity: 0.9;
+}
+
+.deck-count {
+    position: absolute;
+    bottom: -22px;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+}

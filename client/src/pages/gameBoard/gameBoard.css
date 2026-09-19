@@ -1,0 +1,58 @@
+.board-wrapper {
+    --table-ink: #071c20;
+    --table-deep: #0b2b2d;
+    --panel: rgba(10, 35, 38, .76);
+    --line: rgba(202, 238, 219, .16);
+    --gold: #e5bd69;
+    --mint: #66d6a1;
+    min-height: 100dvh;
+    padding: clamp(12px, 1.8vw, 28px);
+    background:
+        radial-gradient(circle at 15% 15%, rgba(87, 171, 126, .18), transparent 30%),
+        radial-gradient(circle at 85% 85%, rgba(229, 189, 105, .10), transparent 30%),
+        linear-gradient(135deg, var(--table-ink), var(--table-deep));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(330px, 430px);
+    gap: clamp(14px, 1.8vw, 28px);
+    color: #fff;
+}
+
+.game-table, .players-area {
+    min-width: 0;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, .3), inset 0 1px rgba(255, 255, 255, .035);
+}
+
+.game-table { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: clamp(12px, 1.4vw, 20px); padding: clamp(14px, 1.8vw, 26px); overflow: hidden; }
+.game-table::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(112deg, rgba(255,255,255,.045), transparent 28%); }
+.board-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; }
+.board-header { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 0 2px 14px; border-bottom: 1px solid var(--line); color: rgba(255,255,255,.85); }
+.room-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(19px, 2vw, 28px); font-weight: 700; letter-spacing: .025em; color: #f7e7c1; text-shadow: 0 2px 18px rgba(0,0,0,.32); }
+.turn-status { border: 1px solid rgba(229, 189, 105, .52); border-radius: 999px; padding: 7px 12px; color: #ffe4a9; background: rgba(229, 189, 105, .1); font-size: 12px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; }
+.turn-status-active { border-color: rgba(102, 214, 161, .76); color: #c4ffe0; background: rgba(102, 214, 161, .14); box-shadow: 0 0 18px rgba(102, 214, 161, .12); }
+.turn-lock { position: absolute; z-index: 20; inset: 56px 0 0; display: grid; place-items: center; border-radius: 0 0 14px 14px; background: rgba(10, 15, 27, .58); backdrop-filter: blur(2px); cursor: not-allowed; }
+.turn-lock span { padding: 10px 14px; border: 1px solid rgba(255, 209, 102, .48); border-radius: 999px; background: rgba(19, 27, 47, .92); color: #ffe1a1; font-size: 13px; font-weight: 700; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
+.start-button { padding: 9px 14px; border: 1px solid rgba(255,255,255,.15); border-radius: 10px; background: linear-gradient(135deg, #2a7964, #1d594b); color: #fff; cursor: pointer; font-weight: 700; box-shadow: 0 5px 12px rgba(0,0,0,.18); }
+.start-button:hover { filter: brightness(1.08); }
+.leave-button { padding: 9px 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: #873d42; color: #fff; cursor: pointer; font-weight: 700; }
+.leave-button:hover { filter: brightness(1.06); }
+.nobles-area { min-width: 0; overflow-x: auto; }
+.decks-area { display: flex; justify-content: flex-end; padding: 0 4px 20px 0; }
+.board-center { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(16px, 2vw, 30px); min-height: 0; background: rgba(1, 20, 21, .35); border: 1px solid rgba(202, 238, 219, .1); border-radius: 16px; backdrop-filter: blur(10px); padding: clamp(14px, 1.6vw, 22px); }
+.card-levels { display: grid; align-content: space-between; gap: clamp(14px, 1.6vw, 22px); min-width: 0; }
+.board-row { display: flex; align-items: center; gap: clamp(14px, 1.7vw, 24px); min-width: 0; }
+.tokens-area { display: flex; flex-direction: column; align-items: center; gap: 10px; padding-left: clamp(8px, 1vw, 14px); border-left: 1px solid var(--line); }
+.token-take-mode { display: flex; gap: 5px; }
+.token-take-mode button { border: 1px solid rgba(255, 255, 255, .18); border-radius: 999px; padding: 5px 8px; color: rgba(255, 255, 255, .7); background: rgba(255, 255, 255, .05); font-size: 11px; font-weight: 700; cursor: pointer; }
+.token-take-mode button:hover, .token-take-mode button.token-take-mode-active { border-color: rgba(67, 210, 130, .75); color: #aaf3ca; background: rgba(67, 210, 130, .14); }
+.token-take-hint { max-width: 172px; color: rgba(255, 225, 161, .92); font-size: 11px; line-height: 1.25; text-align: center; }
+.placeholder { display: none; }
+
+.players-area { display: flex; min-height: 0; flex-direction: column; padding: clamp(16px, 1.6vw, 22px); overflow: hidden; }
+.players-area-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; color: #b7d7c7; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.players-count { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: rgba(229,189,105,.17); color: var(--gold); font-size: 14px; }
+
+@media (max-width: 960px) { .board-wrapper { grid-template-columns: 1fr; min-height: 100vh; } .players-area { overflow: visible; } }
+@media (max-width: 600px) { .board-wrapper { padding: 8px; } .game-table, .players-area { border-radius: 10px; } .board-top { align-items: flex-start; } .board-header { align-items: flex-start; gap: 8px; } .turn-status { white-space: normal; text-align: right; } }

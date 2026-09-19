@@ -1,0 +1,138 @@
+.rooms-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1b2337, #0f1424);
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.rooms-container {
+    width: 900px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+/* Карточки */
+.active-room-card,
+.create-room-card,
+.rooms-list-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    padding: 22px 26px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    color: #fff;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #d0d4e4;
+}
+
+/* Активная комната */
+.active-room-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.player-item {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+/* Создание комнаты */
+.create-form {
+    display: flex;
+    gap: 12px;
+}
+
+.input {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+.input:focus {
+    border-color: #00d2ff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Кнопки */
+.btn-primary {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+    cursor: wait;
+    opacity: 0.65;
+    transform: none;
+}
+
+.form-error {
+    margin-top: 10px;
+    color: #ff9b9b;
+    font-size: 14px;
+}
+
+.btn-secondary {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Список комнат */
+.rooms-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.room-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.empty {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+}

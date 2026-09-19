@@ -1,0 +1,152 @@
+.lobby-page {
+    box-sizing: border-box;
+    display: grid;
+    width: min(100% - 32px, 580px);
+    min-height: 100vh;
+    align-content: center;
+    margin: 0 auto;
+    padding: 32px;
+    color: #fff;
+    text-align: left;
+}
+
+.lobby-page::before {
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    content: "";
+    background: linear-gradient(135deg, #1b2337, #0f1424);
+}
+
+.lobby-page > h2,
+.lobby-page > h3,
+.lobby-page > div,
+.lobby-page > ul {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.lobby-page > h2 {
+    margin: 0;
+    padding: 26px 28px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+    background: rgba(255, 255, 255, 0.07);
+    color: #f5f7ff;
+    font-size: 27px;
+}
+
+.lobby-page > h2 + div {
+    padding: 0 28px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 0;
+    color: #82f0c0;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.lobby-page > h3 {
+    margin: 0;
+    padding: 20px 28px 10px;
+    border-inline: 1px solid rgba(255, 255, 255, 0.12);
+    color: #d0d4e4;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.lobby-page ul {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0 28px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 0;
+    list-style: none;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.lobby-page li {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.lobby-page button {
+    box-shadow: 0 10px 24px rgba(0, 122, 255, 0.22);
+    font-weight: 700;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.lobby-page button:hover {
+    filter: brightness(1.12);
+    transform: translateY(-2px);
+}
+
+.lobby-page > button {
+    width: 100%;
+    padding: 14px 16px !important;
+    border-radius: 0 0 18px 18px !important;
+}
+
+@media (max-width: 540px) {
+    .lobby-page {
+        width: 100%;
+        padding: 16px;
+    }
+}
+.container {
+    margin-top: 60px;
+    text-align: center;
+}
+
+.rooms {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+    margin: 20px auto;
+}
+
+.room {
+    padding: 12px;
+    background: #111;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+}
+
+.create {
+    margin-top: 30px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #111;
+    color: #fff;
+}
+
+.button {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    background: #2a4fff;
+    color: #fff;
+    cursor: pointer;
+}
+
+.playersCount {
+    opacity: 0.7;
+    font-size: 14px;
+}
+button:disabled {
+    background: #666;
+    cursor: not-allowed;
+}

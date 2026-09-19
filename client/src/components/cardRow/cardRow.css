@@ -1,0 +1,156 @@
+.cardrow-wrapper {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    gap: clamp(6px, 1vw, 14px);
+    padding: 0;
+    justify-content: space-between;
+}
+
+/* Базовая карточка */
+.cardrow-card {
+    width: clamp(82px, 10vw, 138px);
+    height: clamp(118px, 14vw, 188px);
+    flex: 0 1 138px;
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(7px, .9vw, 12px);
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.cardrow-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
+}
+
+.cardrow-card-disabled {
+    filter: grayscale(0.45);
+    opacity: 0.7;
+}
+
+.cardrow-card-affordable {
+    border-color: rgba(76, 175, 80, 0.95) !important;
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.42), 0 6px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+.cardrow-card-unaffordable {
+    border-color: rgba(220, 53, 69, 0.9) !important;
+    box-shadow: 0 0 12px rgba(220, 53, 69, 0.35), 0 6px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+.cardrow-card-disabled:hover {
+    transform: none;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* 🎨 Цветные стеклянные фоны */
+.card-bg-red { background: rgba(215, 38, 61, 0.26); }
+
+.card-bg-blue { background: rgba(47, 111, 255, 0.26); }
+
+.card-bg-green { background: rgba(31, 169, 113, 0.26); }
+
+.card-bg-white { background: rgba(217, 241, 255, 0.26); color: #222; }
+
+.card-bg-black { background: rgba(51, 51, 51, 0.35); }
+
+.card-bg-none {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ⭐ Очки */
+.cardrow-points {
+    font-size: clamp(15px, 1.5vw, 20px);
+    font-weight: 700;
+    color: #ffd700;
+    text-align: right;
+}
+
+/* Бонус */
+.cardrow-bonus {
+    width: clamp(24px, 2.5vw, 32px);
+    height: clamp(24px, 2.5vw, 32px);
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.15);
+}
+
+/* Стоимость */
+.cardrow-cost {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.cost-item {
+    width: clamp(19px, 2vw, 26px);
+    height: clamp(19px, 2vw, 26px);
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+/* Цвета стоимости */
+.cost-red    { background: #d7263d; }
+.cost-blue   { background: #2f6fff; }
+.cost-green  { background: #1fa971; }
+.cost-white  { background: #d9f1ff; color: #333; }
+.cost-black  { background: #333333; }
+
+.cardrow-id-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 16px;
+}
+
+.cardrow-id {
+    font-size: clamp(9px, 1vw, 12px);
+    opacity: 0.6;
+    text-align: center;
+}
+
+.cardrow-disabled-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 16px;
+    border-radius: 999px;
+    padding: 0 5px;
+    background: rgba(255, 99, 99, 0.18);
+    border: 1px solid rgba(255, 99, 99, 0.5);
+    color: #ffd6d6;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.cardrow-empty {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+    .cardrow-wrapper { overflow-x: auto; justify-content: flex-start; padding-bottom: 3px; }
+    .cardrow-card { flex: 0 0 78px; }
+}

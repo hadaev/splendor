@@ -1,0 +1,72 @@
+.home-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #1b2337, #0f1424);
+    padding: 20px;
+}
+
+.home-card {
+    max-width: 480px;
+    padding: 32px 36px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    text-align: center;
+}
+
+.home-title {
+    font-size: 42px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+}
+
+.home-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.home-features {
+    text-align: left;
+    margin-bottom: 28px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.home-feature {
+    margin-bottom: 4px;
+}
+
+.home-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.home-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.home-btn-primary {
+    background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+    color: #fff;
+}
+
+.home-btn-secondary {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
