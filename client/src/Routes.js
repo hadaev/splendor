@@ -9,12 +9,6 @@ import Rooms from "./pages/rooms/Rooms";
 import RequireAuth from "./components/RequireAuth";
 
 const Router = () => {
-    // const {userStore} = useContext(Context);
-    // useMemo(() => {
-    //     if (localStorage.getItem('playerId')) {
-    //         userStore.checkAuth();
-    //     }
-    // }, []);
     return (
         <Routes>
             <Route path="/" element={<Home/>}/>

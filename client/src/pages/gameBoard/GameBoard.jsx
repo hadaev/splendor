@@ -125,13 +125,13 @@ function GameBoard() {
     if (!currentGame) {
         const isWaiting = waitingLocal || gameStore.waitingForServerGame;
         return (
-            <div style={{padding: 24, color: '#fff', textAlign: 'center'}}>
-                <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12}}>
+            <div className="game-board-loading">
+                <div className="game-board-loading-content">
                     <div className="room-title">{roomTitle}</div>
-                    <div style={{color: '#dce2ff'}}>
+                    <div className="game-board-loading-message">
                         {isWaiting ? 'Получаем состояние игры с сервера...' : 'Ожидание начала игры'}
                     </div>
-                    <div style={{display: 'flex', gap: 8}}>
+                    <div className="game-board-loading-actions">
                         {roomStatus === 'waiting' && <button className="start-button" onClick={onStartGame}>Начать игру</button>}
                         <button className="start-button" onClick={startInit} disabled={isWaiting}>Обновить</button>
                         <button className="leave-button" onClick={() => {
@@ -261,7 +261,7 @@ function GameBoard() {
                 tokens: {},
                 color: null,
                 cardId: card.id,
-                cardLabel: `#${card.id}`
+                cardLabel: 'Выбранная карта'
             });
             setShowTakeConfirm(true);
             return;
@@ -275,7 +275,7 @@ function GameBoard() {
             tokens: {gold: 1},
             color: null,
             cardId: card.id,
-            cardLabel: `#${card.id}`,
+            cardLabel: 'Выбранная карта',
             canBuy: affordable
         });
         setShowTakeConfirm(true);
@@ -294,7 +294,7 @@ function GameBoard() {
             tokens: {},
             color: null,
             cardId: card.id,
-            cardLabel: `#${card.id}`
+            cardLabel: 'Выбранная карта'
         });
         setShowTakeConfirm(true);
     };
@@ -324,7 +324,7 @@ function GameBoard() {
             tokens: {},
             color: null,
             cardId: noble.id,
-            cardLabel: `#${noble.id}`
+            cardLabel: 'Выбранный нобель'
         });
         setShowTakeConfirm(true);
     };
@@ -698,25 +698,9 @@ function GameBoard() {
     return (
         <div className="board-wrapper">
             {showTakeConfirm && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.55)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        background: '#171b2f',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: 16,
-                        padding: 24,
-                        minWidth: 320,
-                        boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
-                        color: '#fff'
-                    }}>
-                        <div style={{fontSize: 20, fontWeight: 700, marginBottom: 12}}>
+                <div className="game-confirm-overlay">
+                    <div className="game-confirm-dialog">
+                        <div className="game-confirm-title">
                             {takeConfirmData.type === 'gold_locked'
                                 ? 'Золото берётся через резервирование'
                                 : takeConfirmData.type === 'reserve_blocked'
@@ -729,7 +713,7 @@ function GameBoard() {
                                                 ? 'Взять 2 одинаковых жетона?'
                                                 : 'Взять выбранные жетоны?'}
                         </div>
-                        <div style={{marginBottom: 18, color: '#dce2ff'}}>
+                        <div className="game-confirm-message">
                             {takeConfirmData.type === 'gold_locked'
                                 ? 'Сначала зарезервируйте карту, чтобы получить 1 золотой жетон.'
                                 : takeConfirmData.type === 'reserve_blocked'
@@ -741,12 +725,12 @@ function GameBoard() {
                                             : takeConfirmData.type === 'double'
                                                 ? `${takeConfirmData.color}: 2`
                                                 : Object.entries(takeConfirmData.tokens || {}).map(([color, count]) => (
-                                                    <span key={color} style={{marginRight: 10}}>
+                                                    <span key={color} className="game-confirm-token">
                                                         {color}: {count}
                                                     </span>
                                                 ))}
                         </div>
-                        <div style={{display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap'}}>
+                        <div className="game-confirm-actions">
                             {takeConfirmData.type === 'gold_locked' || takeConfirmData.type === 'buy_blocked' || takeConfirmData.type === 'reserve_blocked' || takeConfirmData.type === 'noble_blocked' ? (
                                 <button className="start-button" onClick={confirmSelectedTokens}>Понятно</button>
                             ) : takeConfirmData.type === 'reserve' || takeConfirmData.type === 'buy' || takeConfirmData.type === 'buy_noble' ? (
@@ -768,12 +752,8 @@ function GameBoard() {
                                         {takeConfirmData.type === 'reserve' ? 'Резервировать' : takeConfirmData.type === 'buy_noble' ? 'Купить нобеля' : 'Купить'}
                                     </button>
                                     <button
-                                        className="start-button"
+                                        className={`start-button${takeConfirmData.type === 'reserve' && takeConfirmData.canBuy === false ? ' start-button-disabled' : ''}`}
                                         disabled={takeConfirmData.type === 'reserve' && takeConfirmData.canBuy === false}
-                                        style={{
-                                            opacity: takeConfirmData.type === 'reserve' && takeConfirmData.canBuy === false ? 0.45 : 1,
-                                            cursor: takeConfirmData.type === 'reserve' && takeConfirmData.canBuy === false ? 'not-allowed' : 'pointer'
-                                        }}
                                         onClick={() => {
                                             if (takeConfirmData.type === 'reserve') {
                                                 if (takeConfirmData.canBuy === false) return;
@@ -805,7 +785,7 @@ function GameBoard() {
             <main className={`game-table${isMyTurn ? '' : ' game-table-locked'}`}>
                 <div className="board-header">
                     <div className="room-title">{roomTitle}</div>
-                    <div style={{display: 'flex', gap: 8, alignItems: 'center'}}>
+                    <div className="board-header-actions">
                         <div className={`turn-status${isMyTurn ? ' turn-status-active' : ''}`} role="status">
                             {isMyTurn ? 'Ваш ход' : `Ход выполняет ${activePlayer?.name || 'другой игрок'}`}
                         </div>
@@ -822,9 +802,9 @@ function GameBoard() {
                 )}
                 {/* First-turn actions use the same click-and-confirm flow as every other turn. */}
                 {false && isFirstTurn && (
-                    <div style={{padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12}}>
-                        <div style={{fontWeight: 600}}>Первый ход</div>
-                        <div style={{display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center'}}>
+                    <div className="first-turn-actions">
+                        <div className="first-turn-title">Первый ход</div>
+                        <div className="first-turn-options">
                             <button className="start-button" onClick={() => {
                                 setFirstTurnMode('three');
                                 setFirstTurnSelection({});
@@ -872,7 +852,7 @@ function GameBoard() {
                             </>
                         ) : firstTurnMode === 'two' ? (
                             <>
-                                <div style={{color: '#dce2ff'}}>Выберите цвет, где есть минимум 4 жетона</div>
+                                <div className="first-turn-hint">Выберите цвет, где есть минимум 4 жетона</div>
                                 <TokenPool
                                     tokens={Object.fromEntries(
                                         Object.entries(currentGame.tokens || {}).filter(([color, count]) => color !== 'gold' && Number(count || 0) >= 4)
@@ -882,33 +862,21 @@ function GameBoard() {
                                 />
                             </>
                         ) : firstTurnMode === 'reserve' ? (
-                            <div style={{width: '100%'}}>
-                                <div style={{color: '#dce2ff', marginBottom: 12}}>Выберите карту для резервирования
+                            <div className="first-turn-card-choice">
+                                <div className="first-turn-hint">Выберите карту для резервирования
                                 </div>
-                                <div style={{display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center'}}>
+                                <div className="first-turn-card-list">
                                     {reserveableCards.map((card) => (
                                         <button
                                             key={card.id}
                                             type="button"
                                             onClick={() => handleCardSelection(card)}
-                                            style={{
-                                                width: 140,
-                                                padding: 10,
-                                                borderRadius: 10,
-                                                border: `1px solid ${selectedReserveCardId === card.id ? '#ffd166' : 'rgba(255,255,255,0.15)'}`,
-                                                background: selectedReserveCardId === card.id ? 'rgba(255,209,102,0.12)' : 'rgba(255,255,255,0.04)',
-                                                boxShadow: selectedReserveCardId === card.id ? '0 0 12px rgba(255,209,102,0.45)' : 'none',
-                                                cursor: 'pointer',
-                                                color: '#fff',
-                                                textAlign: 'center',
-                                                font: 'inherit'
-                                            }}
+                                            className={`first-turn-card${selectedReserveCardId === card.id ? ' first-turn-card-selected' : ''}`}
                                         >
-                                            <div style={{fontWeight: 700}}>{card.id}</div>
-                                            <div style={{fontSize: 12, opacity: 0.8}}>{card.points}⭐</div>
-                                            <div style={{fontSize: 11, marginTop: 6}}>
+                                            <div className="first-turn-card-points">{card.points}⭐</div>
+                                            <div className="first-turn-card-cost">
                                                 {Object.entries(card.cost).map(([color, amount]) => (
-                                                    <span key={color} style={{margin: '0 3px'}}>{color}:{amount}</span>
+                                                    <span key={color} className="first-turn-card-cost-item">{color}:{amount}</span>
                                                 ))}
                                             </div>
                                         </button>
@@ -916,8 +884,8 @@ function GameBoard() {
                                 </div>
                             </div>
                         ) : (
-                            <div style={{width: '100%'}}>
-                                <div style={{color: '#dce2ff', marginBottom: 12}}>Выберите карту для покупки</div>
+                            <div className="first-turn-card-choice">
+                                <div className="first-turn-hint">Выберите карту для покупки</div>
                                 <CardRow
                                     cards={reserveableCards}
                                     onCardClick={(card) => handleCardSelection(card)}
@@ -940,6 +908,7 @@ function GameBoard() {
                     <div className="decks-area">
                         <DeckStack
                             level={3}
+                            variant="noble"
                             count={Array.isArray(currentGame.deckNobles)
                                 ? currentGame.deckNobles.length
                                 : currentGame.deckNobles || 0}

@@ -62,15 +62,6 @@ export default class GameStore {
 
     setRoom(room) {
         this.room = room
-        // try {
-        //     if (!room) {
-        //         localStorage.removeItem('splendor-room');
-        //         return;
-        //     }
-        //     localStorage.setItem('splendor-room', JSON.stringify(room));
-        // } catch (e) {
-        //     console.warn('Failed to save room state', e);
-        // }
     }
 
     // The server is the only source of active game state. A local fallback

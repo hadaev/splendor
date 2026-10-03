@@ -75,17 +75,17 @@
 
 /* Бонус */
 .cardrow-bonus {
-    width: clamp(24px, 2.5vw, 32px);
-    height: clamp(24px, 2.5vw, 32px);
+    width: clamp(24px, 3vw, 50px);
+    height: clamp(24px, 3vw, 50px);
     border-radius: 50%;
-    font-size: 18px;
-    font-weight: 700;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 0 auto;
     background: rgba(255,255,255,0.15);
 }
+
+.cardrow-bonus-gem { width: 86%; height: 86%; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .25)); }
 
 /* Стоимость */
 .cardrow-cost {
@@ -120,12 +120,6 @@
     justify-content: center;
     gap: 6px;
     min-height: 16px;
-}
-
-.cardrow-id {
-    font-size: clamp(9px, 1vw, 12px);
-    opacity: 0.6;
-    text-align: center;
 }
 
 .cardrow-disabled-label {

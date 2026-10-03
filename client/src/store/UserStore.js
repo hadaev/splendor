@@ -65,11 +65,6 @@ export default class UserStore {
         this.isLoading = boll;
     }
 
-    // async webSocketClient() {
-    //     const client = new GameClient('ws://localhost:8080');
-    //     this.setClient(client)
-    // }
-
     async login(name, password) {
         try {
             const response = await AuthUser.login(name, password);
@@ -95,7 +90,6 @@ export default class UserStore {
 
             if (playerId) localStorage.setItem("playerId", playerId);
             if (playerName) localStorage.setItem("playerName", playerName);
-            // if (roomId) localStorage.setItem("roomId", roomId);
 
             this.setPlayerId(playerId);
             this.setPlayerName(playerName);
@@ -110,7 +104,6 @@ export default class UserStore {
     }
 
     async handleJoinRoom(room, client) {
-        // const client = new GameClient('ws://localhost:8080');
         this.setRoomId(room);
         localStorage.setItem('roomId', room)
         client.send({
@@ -121,18 +114,6 @@ export default class UserStore {
         });
     };
 
-    // async logout() {
-    //     try {
-    //         await AuthUserService.logout();
-    //         localStorage.removeItem('tokenUser');
-    //         localStorage.removeItem('deviceToken');
-    //         this.setAuth(false);
-    //         this.setUser({});
-    //     } catch (e) {
-    //         return { error: true, message: e.response?.data?.message };
-    //     }
-    // }
-    //
     async checkAuth() {
         this.setLoading(true);
         try {

@@ -36,7 +36,6 @@ export function createInitialGame(gameId, playersCount, players = []) {
     }
 
     // 6. Игроки (пока пусто)
-    // const players = [];
 
     // 7. Собираем объект игры
     return {

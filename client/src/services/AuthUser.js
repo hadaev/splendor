@@ -18,8 +18,4 @@ export default class AuthUser {
     static async registration(name, password) {
         return $api.post('api/registration', { name, password }, { withCredentials: true, credentials: 'include' });
     }
-
-    // static async logout() {
-    //     return $api.post('api/user/logout');
-    // }
 }

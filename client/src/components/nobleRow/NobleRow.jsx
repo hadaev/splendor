@@ -30,7 +30,6 @@ export default function NobleRow({ nobles, onNobleClick, selectedNobleId }) {
                         ))}
                     </div>
 
-                    <div className="noble-id">{noble.id}</div>
                     {onNobleClick && <div className="noble-action">Выбрать</div>}
                 </button>
             ))}

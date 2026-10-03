@@ -1,7 +1,13 @@
 import React from "react";
 import "./playerPanel.css";
+import gemRed from "../deckStack/assets/gem-red.svg";
+import gemBlue from "../deckStack/assets/gem-blue.svg";
+import gemGreen from "../deckStack/assets/gem-green.svg";
+import gemWhite from "../deckStack/assets/gem-white.svg";
+import gemBlack from "../deckStack/assets/gem-black.svg";
 
 const COLOR_ORDER = { red: 0, blue: 1, green: 2, white: 3, black: 4 };
+const gemByColor = {red: gemRed, blue: gemBlue, green: gemGreen, white: gemWhite, black: gemBlack};
 
 export default function PlayerPanel({ players, activePlayerId, viewerPlayerId, canBuyReservedCards, onReservedCardClick, selectedTokens = {} }) {
     if (!players || players.length === 0) {
@@ -99,7 +105,7 @@ export default function PlayerPanel({ players, activePlayerId, viewerPlayerId, c
                                                            title={`${card.id} • ${card.points}⭐ • Стоимость: ${costEntries.map(([color, amount]) => `${color}:${amount}`).join(', ')}`}
                                                        >
                                                            <span className="mini-card-points">{card.points}</span>
-                                                           <span className="mini-card-bonus">{card.bonus && card.bonus !== 'none' ? card.bonus[0].toUpperCase() : ''}</span>
+                                                           <span className="mini-card-bonus">{card.bonus && card.bonus !== 'none' && gemByColor[card.bonus] && <img className="mini-card-gem" src={gemByColor[card.bonus]} alt={`Бонус: ${card.bonus}`}/>}</span>
                                                            <div className="mini-card-cost">
                                                                {costEntries.map(([color, amount]) => (
                                                                    <span key={`${card.id}-${color}-mini`} className={`mini-cost-dot mini-cost-${color}`} title={`${color}: ${amount}`}>
@@ -175,7 +181,7 @@ export default function PlayerPanel({ players, activePlayerId, viewerPlayerId, c
                                                             title={`Резерв: ${card.id} • ${card.points}⭐ • Стоимость: ${costEntries.map(([color, amount]) => `${color}:${amount}`).join(', ')}`}
                                                         >
                                                             <span className="mini-card-points">{card.points}</span>
-                                                            <span className="mini-card-bonus">{card.bonus && card.bonus !== 'none' ? card.bonus[0].toUpperCase() : ''}</span>
+                                                            <span className="mini-card-bonus">{card.bonus && card.bonus !== 'none' && gemByColor[card.bonus] && <img className="mini-card-gem" src={gemByColor[card.bonus]} alt={`Бонус: ${card.bonus}`}/>}</span>
                                                             <div className="mini-card-cost">
                                                                 {costEntries.map(([color, amount]) => (
                                                                     <span key={`${card.id}-${color}-mini`} className={`mini-cost-dot mini-cost-${color}`} title={`${color}: ${amount}`}>

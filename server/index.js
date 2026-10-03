@@ -3,10 +3,7 @@ const express = require('express');
 const sequelize = require('./db/db');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-// const fileUpload = require('express-fileupload');
 const router = require('./routes/index');
-// const errorMiddleware = require('./middleware/error-middleware');
-// const ApiError = require('./error/api-error');
 const migrator = require('./db/migrator');
 const seeder = require('./db/seeder');
 

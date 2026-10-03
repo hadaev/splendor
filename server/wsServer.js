@@ -105,31 +105,6 @@ function broadcastGame(roomId) {
     console.log(`✅ broadcastGame: отправлена игра ${roomId} для ${sentCount} клиентов`);
 }
 
-// function broadcastRoomInfo(roomId,playerId) {
-//     const room = rooms.get(roomId);
-//
-//     if (!room) return;
-//
-//     const info = {
-//         type: "room_info",
-//         roomId,
-//         players: Array.from(room.players.entries()).map(([id, name]) => ({
-//             id,
-//             name
-//         })),
-//         status: room.status,
-//         currentPlayerId: playerId
-//     };
-//     console.log('room_info = ', info);
-//     for (const [ws, client] of clients.entries()) {
-//         if (client.roomId === roomId) {
-//             send(ws, info);
-//         }
-//     }
-// }
-
-// (getOrCreateRoom moved to gameService) - local helper removed to avoid duplication
-
 // ------------------------------------------------------
 // CONNECTION
 // ------------------------------------------------------

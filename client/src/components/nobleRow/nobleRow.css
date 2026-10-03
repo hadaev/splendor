@@ -71,11 +71,6 @@
 .cost-white  { background: #f7f7f7; color: #333; }
 .cost-black  { background: #222; }
 
-.noble-id {
-    font-size: clamp(9px, 1vw, 12px);
-    opacity: 0.6;
-}
-
 .noble-action {
     font-size: clamp(8px, 0.9vw, 11px);
     font-weight: 700;

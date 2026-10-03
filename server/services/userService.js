@@ -23,18 +23,16 @@ class UserService {
 
 
         const hashPassword = await bcrypt.hash(password, 3);
-        // const activationLink = jwt.sign({ email }, process.env.JWT_ACCESS_SECRET, { expiresIn: '24h' });
 
         if (password) {
             paramsUser.password = hashPassword;
             fieldsUser.push('password');
         }
-        // console.log(paramsUser, { fields: fieldsUser })
+
         const dataUser = await User.create(paramsUser, {fields: fieldsUser});
 
         const tokens = tokenService.generateUserTokens({ id: dataUser.id, name: dataUser.name });
         await tokenService.saveUserToken(dataUser.id, tokens.refreshToken);
-        // console.log(dataUser)
 
         return {
             ...tokens,

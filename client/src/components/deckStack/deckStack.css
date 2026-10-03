@@ -15,20 +15,42 @@
     width: 100%;
     height: 100%;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    position: relative;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .28);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .35), inset 0 1px rgba(255, 255, 255, .28);
     display: flex;
     justify-content: center;
     align-items: center;
     color: #fff;
-    font-size: clamp(18px, 2vw, 26px);
+    font-size: clamp(9px, 1vw, 12px);
     font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
 }
 
+.deck-card::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba(255, 255, 255, .24);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.deck-card-level-1 { background: linear-gradient(145deg, #e4b942, #a97316 52%, #714c10); }
+.deck-card-level-2 { background: linear-gradient(145deg, #48ad70, #176845 52%, #0b3a2b); }
+.deck-card-level-3 { background: linear-gradient(145deg, #4b9ee6, #1c579d 52%, #102f65); }
+.deck-card-noble { background: linear-gradient(145deg, #a8754c, #6b432b 52%, #382218); }
+
+.deck-gem { position: relative; z-index: 1; width: 48%; max-height: 52%; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .26)); }
 .deck-level {
-    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+    opacity: .95;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
 }
 
 .deck-count {

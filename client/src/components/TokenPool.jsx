@@ -1,6 +1,5 @@
 import React from 'react';
 import GemIcon from './GemIcon';
-// import Token from './Token';
 export default function TokenPool({ tokens, onMove, isActiveTurn }) {
     const handleTake = (gem) => {
         if (!isActiveTurn) return;
