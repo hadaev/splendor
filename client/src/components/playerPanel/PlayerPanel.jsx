@@ -39,7 +39,6 @@ export default function PlayerPanel({ players, activePlayerId, viewerPlayerId, c
         const bColor = b?.bonus && b.bonus !== 'none' ? b.bonus : 'white';
         return (COLOR_ORDER[aColor] ?? 99) - (COLOR_ORDER[bColor] ?? 99);
     });
-    console.log('players:', players);
     return (
         <div className="playerpanel-wrapper">
             {players.map((player) => {
@@ -82,11 +81,15 @@ export default function PlayerPanel({ players, activePlayerId, viewerPlayerId, c
                                     {purchasedCards.length > 0 && Object.entries(groupedCards).sort(([colorA], [colorB]) => (COLOR_ORDER[colorA] ?? 99) - (COLOR_ORDER[colorB] ?? 99)).map(([color, cards]) => (
                                         <div key={color} className={`purchased-color-group purchased-color-group-${color}`}>
                                             <span className="purchased-color-label">{color}</span>
-                                            <div className={`purchased-stack purchased-stack-${color}`}>
+                                            <div
+                                                className={`purchased-stack purchased-stack-${color}`}
+                                                style={{ height: `${80 + (cards.length - 1) * 28}px` }}
+                                            >
                                                 {cards.map((card, index) => {
                                                     const theme = getCardTheme(card);
                                                     const depth = cards.length - index - 1;
-                                                    const offsetY = depth * 14;
+                                                    // Keep each card's points area clear of the card above it.
+                                                    const offsetY = cards.length === 1 ? depth * 24 : depth * 24 - 24;
                                                     const offsetX = depth * 2;
 
                                                     const costEntries = Object.entries(card.cost || {});
@@ -174,7 +177,7 @@ export default function PlayerPanel({ players, activePlayerId, viewerPlayerId, c
                                                             style={{
                                                                 borderColor: theme.borderColor,
                                                                 background: theme.background,
-                                                                transform: `translate(${index * 24}px, -${index * 5}px)`,
+                                                                transform: `translate(${index * 45}px, 0px)`,
                                                                 zIndex: reservedCards.length - index,
                                                                 opacity: 1 - index * 0.08
                                                             }}
