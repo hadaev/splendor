@@ -9,6 +9,9 @@ import PlayerPanel from "../../components/playerPanel/PlayerPanel";
 import DeckStack from "../../components/deckStack/DeckStack";
 import CardRow from "../../components/cardRow/CardRow";
 import {observer} from 'mobx-react-lite';
+import {StatusPlayer} from "../../components/statusPlayer/statusPlayer";
+import {BoardHeader} from "../../components/boardHeader/BoardHeader";
+import {CardChoiceReserve} from "../../components/cardChoiceReserve/CardChoiceReserve";
 
 function GameBoard() {
     const {gameStore, userStore} = useContext(Context);
@@ -91,7 +94,7 @@ function GameBoard() {
         (storedRoomInfo?.roomId ? `Комната #${storedRoomInfo.roomId}` : null) ||
         (storedRoomId ? `Комната #${storedRoomId}` : 'Комната')
     );
-    console.log('currentGame===', currentGame);
+
     const roomStatus = userStore?.roomInfo?.status || storedRoomInfo?.status || null;
     const [selectedTokens, setSelectedTokens] = useState({});
     const [tokenTakeMode, setTokenTakeMode] = useState('three');
@@ -155,8 +158,11 @@ function GameBoard() {
     );
     const isMyTurn = Boolean(activePlayer) && String(activePlayer.id) === String(currentPlayerId);
 
-    const isFirstTurn = player && (Object.values(player.tokens || {}).reduce((a, b) => a + (b || 0), 0) === 0) && (player.purchasedCards || []).length === 0 && (player.reservedCards || []).length === 0 && currentGame.currentPlayerId === currentPlayerId;
-
+    const isFirstTurn = player &&
+        (Object.values(player.tokens || {}).reduce((a, b) => a + (b || 0), 0) === 0) &&
+        (player.purchasedCards || []).length === 0 && (player.reservedCards || []).length === 0 &&
+        currentGame.currentPlayerId === currentPlayerId;
+    console.log('isFirstTurn === ',isFirstTurn);
 
     const sendMove = (move) => {
         const rid = userStore?.roomId || userStore?.roomInfo?.roomId || JSON.parse(localStorage.getItem('roomInfo') || 'null')?.roomId || localStorage.getItem('roomId');
@@ -235,13 +241,12 @@ function GameBoard() {
 
         let goldNeeded = 0;
         for (const [color, need] of Object.entries(card.cost || {})) {
-            const bonus = currentPlayer.bonuses?.[color] || 0;
+            const bonus = currentPlayer.bonuses?.['gold'] || 0;
             const owned = currentPlayer.tokens?.[color] || 0;
             const payable = Math.max(0, need - bonus);
             if (owned >= payable) continue;
             goldNeeded += payable - owned;
         }
-
         return goldNeeded <= ((currentPlayer.tokens?.gold || 0));
     };
 
@@ -783,21 +788,98 @@ function GameBoard() {
                 </div>
             )}
             <main className={`game-table${isMyTurn ? '' : ' game-table-locked'}`}>
-                <div className="board-header">
-                    <div className="room-title">{roomTitle}</div>
-                    <div className="board-header-actions">
-                        <div className={`turn-status${isMyTurn ? ' turn-status-active' : ''}`} role="status">
-                            {isMyTurn ? 'Ваш ход' : `Ход выполняет ${activePlayer?.name || 'другой игрок'}`}
-                        </div>
-                        {roomStatus === 'waiting' && (
-                            <button className="start-button" onClick={onStartGame}>Начать игру</button>
-                        )}
-                        <button className="leave-button" onClick={onLeaveRoom}>Покинуть комнату</button>
-                    </div>
-                </div>
+                <BoardHeader
+                    roomTitle={roomTitle}
+                    isMyTurn={isMyTurn}
+                    activePlayer={activePlayer}
+                    roomStatus={roomStatus}
+                    onStartGame={onStartGame}
+                    onLeaveRoom={onLeaveRoom}
+                />
                 {!isMyTurn && (
-                    <div className="turn-lock" aria-hidden="true">
-                        <span>Ход выполняет {activePlayer?.name || 'другой игрок'}</span>
+                    <StatusPlayer activePlayer={activePlayer}/>
+                )}
+                {/* First-turn actions use the same click-and-confirm flow as every other turn. */}
+                {false && isFirstTurn && (
+                    <div className="first-turn-actions">
+                        <div className="first-turn-title">Первый ход</div>
+                        <div className="first-turn-options">
+                            <button className="start-button" onClick={() => {
+                                setFirstTurnMode('three');
+                                setFirstTurnSelection({});
+                                setSelectedReserveCardId(null);
+                                setSelectedBuyCardId(null);
+                            }}>Взять 3 разных
+                            </button>
+                            <button className="start-button" onClick={() => {
+                                setFirstTurnMode('two');
+                                setFirstTurnSelection({});
+                                setSelectedReserveCardId(null);
+                                setSelectedBuyCardId(null);
+                            }}>Взять 2 одинаковых
+                            </button>
+                            <button className="start-button" onClick={() => {
+                                setFirstTurnMode('reserve');
+                                setFirstTurnSelection({});
+                                setSelectedBuyCardId(null);
+                            }}>Зарезервировать + золото
+                            </button>
+                            <button className="start-button" onClick={() => {
+                                setFirstTurnMode('buy');
+                                setFirstTurnSelection({});
+                                setSelectedReserveCardId(null);
+                            }}>Купить карту
+                            </button>
+                        </div>
+
+                        {firstTurnMode === 'three' ? (
+                            <>
+                                <TokenPool
+                                    tokens={Object.fromEntries(
+                                        Object.entries(currentGame.tokens || {}).filter(([color]) => color !== 'gold')
+                                    )}
+                                    onTake={handleFirstTurnSelection}
+                                    selected={firstTurnSelection}
+                                />
+                                <button
+                                    className="start-button"
+                                    disabled={!canConfirmThreeColors}
+                                    onClick={confirmFirstTurnTakeThree}
+                                >
+                                    Подтвердить выбор
+                                </button>
+                            </>
+                        ) : firstTurnMode === 'two' ? (
+                            <>
+                                <div className="first-turn-hint">Выберите цвет, где есть минимум 4 жетона</div>
+                                <TokenPool
+                                    tokens={Object.fromEntries(
+                                        Object.entries(currentGame.tokens || {}).filter(([color, count]) => color !== 'gold' && Number(count || 0) >= 4)
+                                    )}
+                                    onTake={onTakeTwoSame}
+                                    selected={
+                                        takeConfirmData.type === 'double' && takeConfirmData.color ? {[takeConfirmData.color]: 2} : {}
+                                    }
+                                />
+                            </>
+                        ) : firstTurnMode === 'reserve' ? (
+                            <CardChoiceReserve
+                                reserveableCards={reserveableCards}
+                                selectedReserveCardId={selectedReserveCardId}
+                                handleCardSelection={handleCardSelection}
+                            />
+                        ) : (
+                            <div className="first-turn-card-choice">
+                                <div className="first-turn-hint">Выберите карту для покупки</div>
+                                <CardRow
+                                    cards={reserveableCards}
+                                    onCardClick={(card) => handleCardSelection(card)}
+                                    selectedCardId={selectedBuyCardId}
+                                    disableIfUnaffordable={true}
+                                    isAffordable={isCardAffordable}
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
                 <div className="board-top">
@@ -865,7 +947,6 @@ function GameBoard() {
                         )}
                     </div>
                 </div>
-                {/*<div className="placeholder">Токены</div>*/}
             </main>
             <aside className="players-area">
                 <div className="players-area-header">

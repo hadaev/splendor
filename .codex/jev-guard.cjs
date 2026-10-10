@@ -6,6 +6,11 @@ const https = require("https");
 
 const MAX_INPUT_CHARS = 12000;
 const CONFIDENCE_THRESHOLD = 0.9;
+const DEBUG = process.env.JEV_GUARD_DEBUG === "1";
+
+function debug(message) {
+  if (DEBUG) process.stderr.write(`[jev-guard] ${message}\n`);
+}
 
 function readStdin() {
   return new Promise((resolve, reject) => {
@@ -65,9 +70,13 @@ function requestDecision(apiKey, state) {
 
 async function main() {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) return;
+  if (!apiKey) {
+    debug("OPENROUTER_API_KEY is not available to the hook process.");
+    return;
+  }
 
   const event = JSON.parse(await readStdin());
+  debug(`received ${event.tool_name ?? "unknown"} tool call`);
   const serializedInput = JSON.stringify(event.tool_input ?? {});
   const state = JSON.stringify({
     tool: event.tool_name,
@@ -75,8 +84,10 @@ async function main() {
   });
   const result = await requestDecision(apiKey, state);
   const probability = result?.answers?.high_risk?.noul;
+  debug(`response keys: ${Object.keys(result ?? {}).join(", ") || "none"}`);
 
   if (typeof probability === "number" && probability >= CONFIDENCE_THRESHOLD) {
+    debug(`blocking call; risk confidence ${probability.toFixed(2)}`);
     process.stdout.write(JSON.stringify({
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
@@ -84,7 +95,12 @@ async function main() {
         permissionDecisionReason: `Blocked by Jev safety guard (risk confidence ${probability.toFixed(2)}).`
       }
     }));
+  } else {
+    debug(`allowing call; high_risk probability: ${typeof probability === "number" ? probability.toFixed(2) : "missing"}`);
   }
 }
 
-main().catch(() => process.exit(0));
+main().catch((error) => {
+  debug(`request failed: ${error.message}`);
+  process.exit(0);
+});
